@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
@@ -37,10 +38,22 @@ class Secret extends ResourceController
         $model = new SecretModel();
         $secret_key = $this->secret_model->getIdbySecretkey($result);
         $data = $model->find(['id' => $secret_key]);
-        if (!$data) return $this->failNotFound('No Data Found');
+        if(!$data){
+            $response = [
+                'status' => 400,
+                'error' => 'Data Not Found',
+                'message' => [
+                    'error' => 'Data Not Found'
+                ]
+            ];
+         return $this->respond($response);
+        }
+        else{
+            return $this->respond($data);
+        }
         // echo json_encode($secret_data);
         // die('###');
-        return $this->respond($data);
+
     }
 
     public function create()
@@ -50,6 +63,7 @@ class Secret extends ResourceController
         $data = [
             'secret_key' => substr(str_shuffle($str_result),0,30),
             'secret_data' => $this->request->getVar('secret_data'),
+            'secret_pass' => '',
             'secret_url' => 'http://localhost:3000/secret/',
             'secret_timedue' => $this->request->getVar('secret_timedue'),
             'passphrase' => $this->request->getVar('passphrase'),
@@ -61,6 +75,49 @@ class Secret extends ResourceController
         $secret_key = $this->secret_model->getSecretKey($result);
         $this->show($result);
         }catch (\Exception $e) {
+            die($e->getMessage());
+        }
+        if ($result) {
+            $response = [
+                'status' => 201,
+                'error' => null,
+                'message' => [
+                    'success' => 'Data Inserted',
+                    'inserted_data' => $secret_key
+                ]
+            ];
+        } else {
+            $response = [
+                'status' => 400,
+                'error' => 'Data Not Inserted',
+                'message' => [
+                    'error' => $result
+                ]
+            ];
+        }
+        echo json_encode($response);
+        die();
+    }
+
+    public function password_post()
+    {
+        helper(['form']);
+        $str_result = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $pass_result = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@#$%&*';
+        $data = [
+            'secret_key' => substr(str_shuffle($str_result), 0, 30),
+            'secret_data' => '',
+            'secret_password' => substr(str_shuffle($pass_result), 0, 8),
+            'secret_url' => 'http://localhost:3000/secret/',
+            'secret_timedue' => $this->request->getVar('secret_timedue'),
+            'passphrase' => $this->request->getVar('passphrase'),
+            'status' => 1,
+        ];
+        try {
+            $result = $this->secret_model->create($data);
+            $secret_key = $this->secret_model->getSecretKey($result);
+            $this->show($result);
+        } catch (\Exception $e) {
             die($e->getMessage());
         }
         if ($result) {

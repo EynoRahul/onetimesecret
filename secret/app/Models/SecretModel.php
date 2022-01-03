@@ -12,7 +12,7 @@ class SecretModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['secret_key','secret_data','secret_url','secret_timedue','passphrase','status'];
+    protected $allowedFields    = ['secret_key','secret_data', 'secret_password','secret_url','secret_timedue','passphrase','status'];
 
     // Dates
     protected $useTimestamps = false;
